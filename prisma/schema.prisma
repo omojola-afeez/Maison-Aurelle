@@ -104,6 +104,7 @@ model Product {
   reviews       Review[]
   relatedFrom   Product[]     @relation("RelatedProducts")
   relatedTo     Product[]     @relation("RelatedProducts")
+  wishlist      WishlistItem[]
 
   @@index([status])
   @@index([featured])
