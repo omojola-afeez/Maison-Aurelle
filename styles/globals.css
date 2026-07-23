@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 20% 97%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    --primary: 158 61% 15%;
+    --primary-foreground: 40 20% 97%;
+    --secondary: 40 43% 60%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 40 10% 90%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 40 43% 60%;
+    --accent-foreground: 0 0% 13%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 10% 85%;
+    --input: 40 10% 85%;
+    --ring: 158 61% 15%;
+    --radius: 0px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-ivory text-charcoal font-sans;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  ::selection {
+    background-color: rgba(15, 61, 46, 0.15);
+    color: #0F3D2E;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-normal tracking-tight;
+  }
+}
+
+@layer components {
+  .luxury-container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16;
+    max-width: 1440px;
+  }
+
+  .luxury-section {
+    @apply py-16 md:py-24 lg:py-32;
+  }
+
+  .luxury-heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-serif leading-[1.1] tracking-tight;
+  }
+
+  .luxury-heading-lg {
+    @apply text-3xl md:text-4xl lg:text-5xl font-serif leading-[1.15] tracking-tight;
+  }
+
+  .luxury-heading-md {
+    @apply text-2xl md:text-3xl font-serif leading-[1.2];
+  }
+
+  .luxury-heading-sm {
+    @apply text-xl md:text-2xl font-serif leading-[1.25];
+  }
+
+  .luxury-body {
+    @apply text-sm md:text-base leading-relaxed text-charcoal-600;
+  }
+
+  .luxury-caption {
+    @apply text-xs uppercase tracking-[0.2em] text-charcoal-400;
+  }
+
+  .luxury-button {
+    @apply inline-flex items-center justify-center px-8 py-4 text-sm uppercase tracking-[0.15em] font-medium transition-all duration-300 ease-luxury;
+  }
+
+  .luxury-button-primary {
+    @apply luxury-button bg-emerald text-white hover:bg-emerald-600;
+  }
+
+  .luxury-button-secondary {
+    @apply luxury-button bg-transparent border border-charcoal text-charcoal hover:bg-charcoal hover:text-white;
+  }
+
+  .luxury-button-gold {
+    @apply luxury-button bg-champagne text-charcoal hover:bg-champagne-600;
+  }
+
+  .luxury-card {
+    @apply bg-white border border-charcoal-100 transition-all duration-500 ease-luxury;
+  }
+
+  .luxury-card:hover {
+    @apply shadow-lg shadow-charcoal-100/50;
+  }
+
+  .luxury-input {
+    @apply w-full px-4 py-3 bg-transparent border border-charcoal-200 text-charcoal placeholder:text-charcoal-400 focus:outline-none focus:border-emerald transition-colors duration-300;
+  }
+
+  .luxury-divider {
+    @apply h-px bg-charcoal-200;
+  }
+
+  .luxury-link {
+    @apply relative text-charcoal transition-colors duration-300 hover:text-emerald;
+  }
+
+  .luxury-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-px bg-emerald transition-all duration-300;
+  }
+
+  .luxury-link:hover::after {
+    @apply w-full;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8F6F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C8A96A;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0F3D2E;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
