@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    ppr: true,
-    dynamicIO: true,
-  },
   images: {
     domains: ['res.cloudinary.com', 'images.unsplash.com'],
     formats: ['image/avif', 'image/webp'],
