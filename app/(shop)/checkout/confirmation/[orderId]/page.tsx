@@ -3,6 +3,7 @@ import Link from "next/link"
 import prisma from "@/lib/prisma"
 import { formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { ClearCartOnLoad } from "@/components/checkout/clear-cart-on-load"
 import { CheckCircle, Package, Truck } from "lucide-react"
 
 interface ConfirmationPageProps {
@@ -26,6 +27,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
 
   return (
     <div className="luxury-container py-16 max-w-2xl mx-auto text-center">
+      <ClearCartOnLoad shouldClear={Boolean(order.paymentIntentId)} />
       <div className="mb-8">
         <CheckCircle className="w-16 h-16 text-emerald mx-auto mb-6" />
         <h1 className="font-serif text-3xl text-emerald mb-4">Thank You for Your Order</h1>

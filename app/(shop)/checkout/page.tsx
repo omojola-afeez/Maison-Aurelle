@@ -2,14 +2,17 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Elements } from "@stripe/react-stripe-js"
 import { useCartStore } from "@/stores/cart-store"
 import { formatPrice } from "@/lib/utils"
+import { getStripe } from "@/lib/stripe-client"
+import { CheckoutPaymentForm } from "@/components/checkout/payment-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "react-hot-toast"
-import { CreditCard, ChevronRight, Lock } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 
 const steps = ["Information", "Shipping", "Payment"]
 
@@ -17,7 +20,9 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, clearCart } = useCartStore()
   const [currentStep, setCurrentStep] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false)
+  const [orderId, setOrderId] = useState<string | null>(null)
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     name: "",
@@ -45,57 +50,72 @@ export default function CheckoutPage() {
     )
   }
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1)
     }
   }
 
-  const handleSubmit = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((item) => ({
-            name: item.name,
-            sku: item.sku,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-          })),
-          shippingAddress: {
-            email: formData.email,
-            name: formData.name,
-            line1: formData.line1,
-            city: formData.city,
-            state: formData.state,
-            zip: formData.zip,
-            country: formData.country,
-            phone: formData.phone,
-          },
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Checkout failed")
+  const handleNext = async () => {
+    if (currentStep === 0) {
+      if (!formData.email || !formData.name || !formData.line1 || !formData.city || !formData.state || !formData.zip) {
+        toast.error("Please fill in all required fields")
+        return
       }
+      setCurrentStep(1)
+      return
+    }
 
-      clearCart()
-      router.push(`/checkout/confirmation/${data.orderId}`)
-    } catch (error: any) {
-      toast.error(error.message || "Something went wrong")
-    } finally {
-      setIsLoading(false)
+    if (currentStep === 1) {
+      // Moving from Shipping into Payment: create the order and the
+      // Stripe PaymentIntent up front, so the Payment step can mount
+      // Stripe Elements against a real clientSecret.
+      setIsCreatingOrder(true)
+      try {
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: items.map((item) => ({
+              name: item.name,
+              sku: item.sku,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+            })),
+            shippingAddress: {
+              email: formData.email,
+              name: formData.name,
+              line1: formData.line1,
+              city: formData.city,
+              state: formData.state,
+              zip: formData.zip,
+              country: formData.country,
+              phone: formData.phone,
+            },
+          }),
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to start checkout")
+        }
+
+        setOrderId(data.orderId)
+        setClientSecret(data.clientSecret)
+        setCurrentStep(2)
+      } catch (error: any) {
+        toast.error(error.message || "Something went wrong")
+      } finally {
+        setIsCreatingOrder(false)
+      }
+    }
+  }
+
+  const handlePaymentSuccess = () => {
+    clearCart()
+    if (orderId) {
+      router.push(`/checkout/confirmation/${orderId}`)
     }
   }
 
@@ -286,43 +306,43 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          {currentStep === 2 && (
+          {currentStep === 2 && clientSecret && (
             <div className="space-y-6">
               <h2 className="font-serif text-xl text-emerald">Payment</h2>
-              <div className="p-6 border border-charcoal-200 bg-ivory-50">
-                <div className="flex items-center gap-3 mb-4">
-                  <Lock className="w-5 h-5 text-emerald" />
-                  <p className="font-medium">Secure Payment</p>
-                </div>
-                <p className="text-sm text-charcoal-500">
-                  Your payment information is encrypted and secure. We accept all major credit cards.
-                </p>
-              </div>
-              <div className="p-6 border border-charcoal-200">
-                <p className="text-sm text-charcoal-500 text-center">
-                  Stripe payment integration will be initialized here.
-                </p>
-              </div>
+              <Elements
+                stripe={getStripe()}
+                options={{ clientSecret, appearance: { theme: "stripe" } }}
+              >
+                <CheckoutPaymentForm
+                  returnUrl={`${window.location.origin}/checkout/confirmation/${orderId}`}
+                  onSuccess={handlePaymentSuccess}
+                />
+              </Elements>
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-8 pt-8 border-t border-charcoal-100">
-            {currentStep > 0 ? (
+          {currentStep < 2 && (
+            <div className="flex items-center justify-between mt-8 pt-8 border-t border-charcoal-100">
+              {currentStep > 0 ? (
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+              ) : (
+                <div />
+              )}
+              <Button onClick={handleNext} isLoading={isCreatingOrder}>
+                Continue
+              </Button>
+            </div>
+          )}
+
+          {currentStep === 2 && (
+            <div className="mt-8 pt-8 border-t border-charcoal-100">
               <Button variant="outline" onClick={handleBack}>
                 Back
               </Button>
-            ) : (
-              <div />
-            )}
-            {currentStep < steps.length - 1 ? (
-              <Button onClick={handleNext}>Continue</Button>
-            ) : (
-              <Button onClick={handleSubmit} isLoading={isLoading}>
-                <CreditCard className="w-4 h-4 mr-2" />
-                Complete Order
-              </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Order Summary */}
