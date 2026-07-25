@@ -14,8 +14,8 @@ interface ProductCardProps {
     id: string
     slug: string
     name: string
-    price: number
-    comparePrice?: number | null
+    price: number | string | { toString(): string }
+    comparePrice?: number | string | { toString(): string } | null
     images: { url: string; alt?: string | null; isPrimary: boolean }[]
     designer?: { name: string } | null
     featured?: boolean
@@ -32,9 +32,14 @@ export function ProductCard({ product, className, style, initialWishlisted = fal
   const [isHovered, setIsHovered] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Prisma returns money fields as Decimal objects, not plain numbers —
+  // normalize once here so every usage below is a guaranteed plain number.
+  const price = Number(product.price)
+  const comparePrice = product.comparePrice != null ? Number(product.comparePrice) : null
+
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0]
-  const discount = product.comparePrice
-    ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
+  const discount = comparePrice
+    ? Math.round(((comparePrice - price) / comparePrice) * 100)
     : null
 
   return (
@@ -105,10 +110,10 @@ export function ProductCard({ product, className, style, initialWishlisted = fal
             {product.name}
           </h3>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{formatPrice(product.price)}</span>
-            {product.comparePrice && (
+            <span className="text-sm font-medium">{formatPrice(price)}</span>
+            {comparePrice && (
               <span className="text-sm text-charcoal-400 line-through">
-                {formatPrice(product.comparePrice)}
+                {formatPrice(comparePrice)}
               </span>
             )}
           </div>

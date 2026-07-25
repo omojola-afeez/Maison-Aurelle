@@ -64,6 +64,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const { product, relatedProducts } = data
 
+  // Prisma returns money fields as Decimal objects, not plain numbers.
+  // ProductInfo/ProductCard expect plain numbers, so normalize here.
+  const normalizedProduct = {
+    ...product,
+    price: Number(product.price),
+    comparePrice: product.comparePrice != null ? Number(product.comparePrice) : null,
+    variants: product.variants.map((v) => ({
+      ...v,
+      price: v.price != null ? Number(v.price) : null,
+    })),
+  }
+
+  const normalizedRelatedProducts = relatedProducts.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    comparePrice: p.comparePrice != null ? Number(p.comparePrice) : null,
+  }))
+
   return (
     <div className="luxury-container py-8 md:py-16">
       {/* Breadcrumb */}
@@ -80,7 +98,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {/* Product Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
         <ProductGallery images={product.images} productName={product.name} />
-        <ProductInfo product={product} />
+        <ProductInfo product={normalizedProduct} />
       </div>
 
       <Separator className="my-16" />
@@ -94,7 +112,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
 
       {/* Related Products */}
-      {relatedProducts.length > 0 && (
+      {normalizedRelatedProducts.length > 0 && (
         <>
           <Separator className="mb-16" />
           <div>
@@ -102,7 +120,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               You May Also Like
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedProducts.map((p) => (
+              {normalizedRelatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
