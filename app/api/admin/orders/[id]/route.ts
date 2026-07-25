@@ -13,7 +13,7 @@ const orderUpdateSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -29,7 +29,7 @@ export async function PATCH(
     const data = parsed.data
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         status: data.status,
         paymentStatus: data.paymentStatus,

@@ -4,8 +4,8 @@ import { ProductGrid } from "@/components/product/product-grid"
 import { Separator } from "@/components/ui/separator"
 
 interface CategoryPageProps {
-  params: { slug: string }
-  searchParams: { [key: string]: string | string[] | undefined }
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 async function getCategoryData(slug: string) {
@@ -44,7 +44,7 @@ async function getCategoryData(slug: string) {
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {
-  const data = await getCategoryData(params.slug)
+  const data = await getCategoryData((await params).slug)
   if (!data) return { title: "Category Not Found" }
   return {
     title: `${data.category.name} | Maison Aurelle`,
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const data = await getCategoryData(params.slug)
+  const data = await getCategoryData((await params).slug)
   if (!data) notFound()
 
   const { category, products, designers } = data

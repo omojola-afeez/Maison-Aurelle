@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma"
 import { ProductGrid } from "@/components/product/product-grid"
 
 interface CollectionPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 async function getCollection(slug: string) {
@@ -28,7 +28,7 @@ async function getCollection(slug: string) {
 }
 
 export async function generateMetadata({ params }: CollectionPageProps) {
-  const data = await getCollection(params.slug)
+  const data = await getCollection((await params).slug)
   if (!data) return { title: "Collection Not Found" }
   return {
     title: `${data.collection.name} | Maison Aurelle`,
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: CollectionPageProps) {
 }
 
 export default async function CollectionDetailPage({ params }: CollectionPageProps) {
-  const data = await getCollection(params.slug)
+  const data = await getCollection((await params).slug)
   if (!data) notFound()
 
   const { collection, products } = data

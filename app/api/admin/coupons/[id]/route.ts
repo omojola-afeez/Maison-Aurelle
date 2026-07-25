@@ -15,7 +15,7 @@ const couponSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -31,7 +31,7 @@ export async function PATCH(
     const data = parsed.data
 
     const coupon = await prisma.coupon.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         type: data.type,
         value: data.value,
@@ -55,7 +55,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -63,7 +63,7 @@ export async function DELETE(
   }
 
   try {
-    await prisma.coupon.delete({ where: { id: params.id } })
+    await prisma.coupon.delete({ where: { id: (await params).id } })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     if (error?.code === "P2025") {

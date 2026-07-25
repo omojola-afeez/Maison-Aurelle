@@ -3,11 +3,11 @@ import { requireAdmin } from "@/lib/auth-helpers"
 import prisma from "@/lib/prisma"
 import { ProductForm } from "@/components/admin/product-form"
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
   const [product, categories, designers] = await Promise.all([
     prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { variants: true },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),

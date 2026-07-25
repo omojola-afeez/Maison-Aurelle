@@ -3,9 +3,9 @@ import { requireAdmin } from "@/lib/auth-helpers"
 import prisma from "@/lib/prisma"
 import { CouponForm } from "@/components/admin/coupon-form"
 
-export default async function EditCouponPage({ params }: { params: { id: string } }) {
+export default async function EditCouponPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
-  const coupon = await prisma.coupon.findUnique({ where: { id: params.id } })
+  const coupon = await prisma.coupon.findUnique({ where: { id: (await params).id } })
   if (!coupon) notFound()
 
   return (

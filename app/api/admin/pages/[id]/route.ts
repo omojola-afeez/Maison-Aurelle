@@ -15,7 +15,7 @@ const pageSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -31,7 +31,7 @@ export async function PATCH(
     const data = parsed.data
 
     const page = await prisma.page.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         title: data.title,
         slug: slugify(data.slug),
@@ -57,7 +57,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -65,7 +65,7 @@ export async function DELETE(
   }
 
   try {
-    await prisma.page.delete({ where: { id: params.id } })
+    await prisma.page.delete({ where: { id: (await params).id } })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     if (error?.code === "P2025") {

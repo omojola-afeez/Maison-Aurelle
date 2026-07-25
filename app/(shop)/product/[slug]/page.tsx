@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft } from "lucide-react"
 
 interface ProductPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 async function getProduct(slug: string) {
@@ -45,7 +45,7 @@ async function getProduct(slug: string) {
 }
 
 export async function generateMetadata({ params }: ProductPageProps) {
-  const data = await getProduct(params.slug)
+  const data = await getProduct((await params).slug)
   if (!data) return { title: "Product Not Found" }
 
   const { product } = data
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const data = await getProduct(params.slug)
+  const data = await getProduct((await params).slug)
   if (!data) notFound()
 
   const { product, relatedProducts } = data

@@ -5,10 +5,10 @@ import prisma from "@/lib/prisma"
 import { formatPrice, formatDate } from "@/lib/utils"
 import { CustomerRoleForm } from "@/components/admin/customer-role-form"
 
-export default async function AdminCustomerDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminCustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
   const customer = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id: (await params).id },
     include: { orders: { orderBy: { createdAt: "desc" } }, addresses: true },
   })
 

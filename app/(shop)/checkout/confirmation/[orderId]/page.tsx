@@ -7,7 +7,7 @@ import { ClearCartOnLoad } from "@/components/checkout/clear-cart-on-load"
 import { CheckCircle, Package, Truck } from "lucide-react"
 
 interface ConfirmationPageProps {
-  params: { orderId: string }
+  params: Promise<{ orderId: string }>
 }
 
 async function getOrder(orderId: string) {
@@ -19,7 +19,7 @@ async function getOrder(orderId: string) {
 }
 
 export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
-  const order = await getOrder(params.orderId)
+  const order = await getOrder((await params).orderId)
 
   if (!order) {
     notFound()

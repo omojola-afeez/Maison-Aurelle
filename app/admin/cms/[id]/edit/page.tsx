@@ -3,9 +3,9 @@ import { requireAdmin } from "@/lib/auth-helpers"
 import prisma from "@/lib/prisma"
 import { PageForm } from "@/components/admin/page-form"
 
-export default async function EditPagePage({ params }: { params: { id: string } }) {
+export default async function EditPagePage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
-  const page = await prisma.page.findUnique({ where: { id: params.id } })
+  const page = await prisma.page.findUnique({ where: { id: (await params).id } })
   if (!page) notFound()
 
   return (

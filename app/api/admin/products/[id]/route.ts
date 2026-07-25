@@ -20,7 +20,7 @@ const productUpdateSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -36,7 +36,7 @@ export async function PATCH(
     const data = parsed.data
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name: data.name,
         slug: data.slug ? slugify(data.slug) : undefined,
@@ -71,7 +71,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminApi()
   if (!admin) {
@@ -79,7 +79,7 @@ export async function DELETE(
   }
 
   try {
-    await prisma.product.delete({ where: { id: params.id } })
+    await prisma.product.delete({ where: { id: (await params).id } })
     return NextResponse.json({ success: true })
   } catch (error: any) {
     if (error?.code === "P2003" || error?.code === "P2014") {

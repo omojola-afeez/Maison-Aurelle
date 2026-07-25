@@ -4,10 +4,10 @@ import prisma from "@/lib/prisma"
 import { formatPrice, formatDate } from "@/lib/utils"
 import { OrderStatusForm } from "@/components/admin/order-status-form"
 
-export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
+export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin()
   const order = await prisma.order.findUnique({
-    where: { id: params.id },
+    where: { id: (await params).id },
     include: { items: true, user: true, transactions: true },
   })
 

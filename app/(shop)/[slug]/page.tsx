@@ -6,8 +6,13 @@ async function getPage(slug: string) {
   return prisma.page.findUnique({ where: { slug } })
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const page = await getPage(params.slug)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const page = await getPage(slug)
   if (!page) return {}
   return {
     title: page.metaTitle || page.title,
@@ -15,8 +20,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function CmsPage({ params }: { params: { slug: string } }) {
-  const page = await getPage(params.slug)
+export default async function CmsPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const page = await getPage(slug)
 
   if (!page || !page.isPublished) {
     notFound()
