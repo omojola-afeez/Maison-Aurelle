@@ -23,3 +23,16 @@ export async function requireAdmin() {
   }
   return user
 }
+
+/**
+ * Same check as requireAdmin(), but for API route handlers: returns null
+ * instead of calling redirect() (which throws and isn't meant for routes
+ * that need to return a JSON error response).
+ */
+export async function requireAdminApi() {
+  const user = await getCurrentUser()
+  if (!user || user.role !== "ADMIN") {
+    return null
+  }
+  return user
+}

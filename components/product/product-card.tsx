@@ -2,10 +2,12 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Heart } from "lucide-react"
 import { cn, formatPrice } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
+import toast from "react-hot-toast"
 
 interface ProductCardProps {
   product: {
@@ -20,11 +22,15 @@ interface ProductCardProps {
     status?: string
   }
   className?: string
+  style?: React.CSSProperties
+  initialWishlisted?: boolean
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
+export function ProductCard({ product, className, style, initialWishlisted = false }: ProductCardProps) {
+  const router = useRouter()
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted)
   const [isHovered, setIsHovered] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0]
   const discount = product.comparePrice
@@ -34,6 +40,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <div
       className={cn("group relative", className)}
+      style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -112,11 +119,36 @@ export function ProductCard({ product, className }: ProductCardProps) {
       <button
         className={cn(
           "absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm transition-all duration-300",
-          isHovered ? "opacity-100" : "opacity-0"
+          isHovered || isWishlisted ? "opacity-100" : "opacity-0"
         )}
-        onClick={(e) => {
+        disabled={isSaving}
+        onClick={async (e) => {
           e.preventDefault()
-          setIsWishlisted(!isWishlisted)
+          setIsSaving(true)
+          const nextState = !isWishlisted
+          setIsWishlisted(nextState) // optimistic
+          try {
+            const res = await fetch("/api/wishlist", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ productId: product.id }),
+            })
+            if (res.status === 401) {
+              setIsWishlisted(!nextState)
+              toast.error("Sign in to save items to your wishlist")
+              router.push("/login")
+              return
+            }
+            if (!res.ok) {
+              setIsWishlisted(!nextState)
+              toast.error("Something went wrong")
+            }
+          } catch {
+            setIsWishlisted(!nextState)
+            toast.error("Something went wrong")
+          } finally {
+            setIsSaving(false)
+          }
         }}
       >
         <Heart

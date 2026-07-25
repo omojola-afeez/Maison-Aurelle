@@ -7,9 +7,10 @@ interface ProductGridProps {
   products: Parameters<typeof ProductCard>[0]["product"][]
   className?: string
   columns?: 2 | 3 | 4
+  allWishlisted?: boolean
 }
 
-export function ProductGrid({ products, className, columns = 4 }: ProductGridProps) {
+export function ProductGrid({ products, className, columns = 4, allWishlisted = false }: ProductGridProps) {
   const gridCols = {
     2: "grid-cols-2",
     3: "grid-cols-2 md:grid-cols-3",
@@ -22,6 +23,7 @@ export function ProductGrid({ products, className, columns = 4 }: ProductGridPro
         <ProductCard
           key={product.id}
           product={product}
+          initialWishlisted={allWishlisted}
           className="animate-fade-up"
           style={{ animationDelay: `${index * 100}ms` }}
         />
